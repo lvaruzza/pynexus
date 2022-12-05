@@ -11,6 +11,55 @@ def parse_checksum(file):
     file_list= [ line.decode("UTF-8").rstrip().split()[1] for line in file.readlines()] 
     return file_list
     
+class PagingResults:
+    def __init__(self,server,request,params):
+        self.server = server
+        self.i=0
+        self.request = request
+        self.params = params
+        self.objects = []
+        self.page_size=3
+        self.page=1
+        print('params'+str(self.params))
+
+    def load(self):
+        #print("Loading...")
+        self.params['pageSize']=self.page_size
+        self.params['pageNumber']=self.page
+        resp = self.server._api_call_(self.request,self.params)
+        if (resp.ok):
+            print(resp)
+            rj = json.loads(resp.text)
+            #print(json.dumps(rj['meta'], indent=4, sort_keys=True))
+
+            self.objects = rj["objects"]
+            self.objects.reverse()
+            return True
+        else:
+            return False
+
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
+
+    def reload(self):
+        self.page = self.page + 1        
+        #print("============> REALOD page " + str(self.page))
+        self.load()
+        if len(self.objects)==0:
+            raise StopIteration()
+
+
+    def next(self):
+        self.i = self.i +1
+        if not self.objects:
+            self.reload()
+        return self.objects.pop()
+
+
 class Genexus:
     def __init__(self,server,username,password):
         self.server=server
@@ -21,15 +70,18 @@ class Genexus:
 
     def _api_call_(self,request,params={}):
         url = self.server + self.api_url + request
-        print("Request: " + url + " params=" + str(params))
+        #print("Request: " + url + " params=" + str(params))
         r = requests.get(url,headers=self.headers,params=params,verify=False)
+        #print(r.url)
         return(r)
 
     def getJson(self,request,params={}):
         r = self._api_call_(request,params)
         rj = json.loads(r.text)
-        #print(json.dumps(rj, indent=4, sort_keys=True))
         return rj['objects']
+
+    def request(self,request,params={}):
+        return PagingResults(self,request,params)
 
     def results(self):
         return self.getJson("results")
@@ -62,6 +114,8 @@ class Genexus:
     def signedOffSamples(self):
         return self.getJson("signedOffSamples",{"signedOff":False})
     
+    def plans(self):
+        return self.request("plans")
 
 with open('genexus.json') as f:
     cfg = json.load(f)
@@ -69,6 +123,7 @@ with open('genexus.json') as f:
 print(cfg)
 
 gnx = Genexus(cfg['server'],cfg['username'],cfg['password'])
-samples = gnx.signedOffSamples()
-for sample in samples:
-    files=gnx.download(sample['sample'])
+plans = gnx.plans()
+for plan in plans:
+    print(json.dumps(sample, indent=4, sort_keys=True))
+    print("======***======")

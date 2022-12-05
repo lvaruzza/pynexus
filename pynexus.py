@@ -83,9 +83,6 @@ class Genexus:
     def request(self,request,params={}):
         return PagingResults(self,request,params)
 
-    def results(self):
-        return self.getJson("results")
-
     def _download_(self,result,file):
         print("Saving file to " + file)
         with open(file, 'wb') as f:
@@ -114,8 +111,18 @@ class Genexus:
     def signedOffSamples(self):
         return self.getJson("signedOffSamples",{"signedOff":False})
     
+    #
+    # API
+    #
+
     def plans(self):
         return self.request("plans")
+
+    def plans(self):
+        return self.request("results")
+
+    def samples(self):
+        return self.request("samples")
 
 with open('genexus.json') as f:
     cfg = json.load(f)

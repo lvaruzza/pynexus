@@ -1,6 +1,7 @@
 import requests
 import json
 import zipfile
+import itertools as iter
 
 from urllib3.exceptions import InsecureRequestWarning
 
@@ -18,9 +19,8 @@ class PagingResults:
         self.request = request
         self.params = params
         self.objects = []
-        self.page_size=3
-        self.page=1
-        print('params'+str(self.params))
+        self.page_size=32
+        self.page=0
 
     def load(self):
         #print("Loading...")
@@ -28,7 +28,6 @@ class PagingResults:
         self.params['pageNumber']=self.page
         resp = self.server._api_call_(self.request,self.params)
         if (resp.ok):
-            print(resp)
             rj = json.loads(resp.text)
             #print(json.dumps(rj['meta'], indent=4, sort_keys=True))
 
@@ -118,19 +117,28 @@ class Genexus:
     def plans(self):
         return self.request("plans")
 
-    def plans(self):
+    def results(self):
         return self.request("results")
+
+    def result(self,planName):
+        return self.request("results",{'planName':planName})
 
     def samples(self):
         return self.request("samples")
 
-with open('genexus.json') as f:
-    cfg = json.load(f)
+def main():
+    with open('genexus.json') as f:
+        cfg = json.load(f)
 
-print(cfg)
 
-gnx = Genexus(cfg['server'],cfg['username'],cfg['password'])
-plans = gnx.plans()
-for plan in plans:
-    print(json.dumps(sample, indent=4, sort_keys=True))
-    print("======***======")
+    gnx = Genexus(cfg['server'],cfg['username'],cfg['password'])
+
+    xs=gnx.plans()
+    for x in iter.islice(xs,1):
+        print(json.dumps(x, indent=4, sort_keys=True))
+        rs=gnx.result(x['planName'])
+        for r in rs: 
+            print("**************************")
+            print(r['id'],r['planName'],r['sampleId'])
+            print()
+            print(json.dumps(r, indent=4, sort_keys=True))

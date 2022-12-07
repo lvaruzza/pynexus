@@ -2,6 +2,7 @@ import requests
 import json
 import zipfile
 import itertools as iter
+import argparse
 
 from urllib3.exceptions import InsecureRequestWarning
 
@@ -126,19 +127,16 @@ class Genexus:
     def samples(self):
         return self.request("samples")
 
-def main():
-    with open('genexus.json') as f:
+def main(tool,argparser=None):
+    if not argparser:
+        argparser=argparse.ArgumentParser()
+    
+    print(argparser)
+    
+    argparser.add_argument('-c','--config',default='genexus.json')
+    args = argparser.parse_args()
+    with open(args.config) as f:
         cfg = json.load(f)
 
-
     gnx = Genexus(cfg['server'],cfg['username'],cfg['password'])
-
-    xs=gnx.plans()
-    for x in iter.islice(xs,1):
-        print(json.dumps(x, indent=4, sort_keys=True))
-        rs=gnx.result(x['planName'])
-        for r in rs: 
-            print("**************************")
-            print(r['id'],r['planName'],r['sampleId'])
-            print()
-            print(json.dumps(r, indent=4, sort_keys=True))
+    tool(gnx,args)

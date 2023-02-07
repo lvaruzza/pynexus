@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+testing.py
+AssayDev_NTC_OPA_GX5_SolidTumor_DNA_Fusions_w3.2.0_QJI2G_QJI2G.zip
+AssayDev_NTC_OPA_GX5_SolidTumor_DNA_Fusions_w3.2.0_QJI2G_QJI2G_CHKSUM.zip
+import.py

@@ -92,7 +92,51 @@ class Genexus:
                     f.write(chunk)
             print()
 
-    def download(self,sample):
+    def _final_files_(self,file_list,extensions,return_files_containing_ext=False):
+        """
+        params:
+        file_list: list containing all files available for download
+        extension:  list containing extensions to match
+        return_files_containing_ext: boolean If False (default) any file that has an extension contained in extension 
+                                     list is not returned. If True only files that have extension contained in list 
+                                     are returned.
+        
+        """
+        _final_files = []
+        _exclude_files = []
+        for file in file_list:
+            _ext = file.split(".")[-1]
+            if _ext not in extensions:
+                _final_files.append(file)
+            else:
+                _exclude_files.append(str(file))
+ 
+        if return_files_containing_ext is False:
+            _exclude_file_length = len(_exclude_files)
+            _exclude_files_str = '\n\t\t'.join(_exclude_files)
+            print(f'{_exclude_file_length} files excluded:\n{_exclude_files_str}\n----------------------')
+            return _final_files
+        
+        elif return_files_containing_ext is True:
+            _exclude_file_length = len(_final_files)
+            _exclude_files_str = '\n\t\t'.join(_final_files)
+            print(f'{_exclude_file_length} files excluded:\n{_exclude_files_str}\n----------------------')
+            return _exclude_files
+
+
+
+
+    def download(self,sample,extensions=['bai','bam','fastq'],return_files_with_ext=False):
+        """
+        params:
+        sample: dictionary containing key:value pair 'base_url` : target url to append to API request.
+        extensions: list of extensions to be included or excluded in final download. Typical extensions include:
+                    'bam, bai, fastq, txt, log, png, xls, tsv'. 
+        return_files_with_ext:  boolean If True only files that have extensions matching an element of the extensions
+                                list are returned. If False (default) no with an extension matching the an element of 
+                                the extensions list is returned.
+
+        """
         r=self._api_call_("download",{'file_list':"CHECKSUM",
                                 "path":sample['base_url']})
 
@@ -102,7 +146,9 @@ class Genexus:
         with zipfile.ZipFile(chksum_zip) as zip:
             with zip.open('CHECKSUM') as file:
                 file_list=parse_checksum(file)
-                final_files = [file for file in file_list if not (file.endswith(".bam") or file.endswith('.bai') or file.endswith('fastq'))]
+                #final_files = [file for file in file_list if not (file.endswith(".bam") or file.endswith('.bai') or file.endswith('fastq'))]
+                final_files =  self._final_files_(file_list,extensions,return_files_containing_ext=return_files_with_ext)
+                print(final_files)
                 r=self._api_call_("download",{'file_list':",".join(final_files),
                                     "path":sample['base_url']})
             

@@ -3,6 +3,7 @@ import json
 import zipfile
 import itertools as iter
 import argparse
+#requests must be installed using pip
 
 from urllib3.exceptions import InsecureRequestWarning
 

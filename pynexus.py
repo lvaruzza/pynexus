@@ -165,15 +165,25 @@ class Genexus:
     def plans(self):
         return self.request("plans")
 
+
     def results(self):
         return self.request("results")
-
     def result(self,planName):
         return self.request("results",{'planName':planName})
 
     def samples(self):
         return self.request("samples")
 
+
+class Sample:
+    def __init__(self,planShortId,planName,sampleId):
+        self.planShortId = planShortId
+        self.planName = planName
+        self.sampleId = sampleId
+    
+    def __str__(self):
+        return f'self.planShortId={self.planShortId} self.planName={self.planName} self.sampleId={self.sampleId}\n'
+    
 def main(tool,argparser=None):
     if not argparser:
         argparser=argparse.ArgumentParser()

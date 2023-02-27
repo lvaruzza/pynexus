@@ -1,5 +1,6 @@
 {
     "server":  "https://IP_ADDRESS",
     "username": "ionadmin",
-    "password": "ion123"
+    "password": "ion123",
+    "planNamesFile": "planNames.txt" 
 }
